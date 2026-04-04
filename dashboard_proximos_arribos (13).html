@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Próximos Arribos — Loginter</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Nunito:wght@800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f5f4f0; --surface:#fff; --surface2:#f0efe9;
+  --border:#e2e0d8; --border2:#ccc9bc;
+  --text:#1a1916; --text2:#6b6860; --text3:#a09e99;
+  --red:#cc1414; --radius:10px; --radius-lg:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+header{background:var(--red);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between;}
+header h1{font-size:14px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:#fff;}
+.logo-text{font-family:'Nunito',sans-serif;font-weight:800;font-size:26px;color:#fff;}
+
+.container{max-width:1400px;margin:0 auto;padding:1.5rem 2rem;}
+
+/* KPIs */
+.kpi-row{display:grid;gap:12px;margin-bottom:1.5rem;}
+.kpi-row.top{grid-template-columns:repeat(6,1fr);}
+@media(max-width:1000px){.kpi-row.top{grid-template-columns:repeat(3,1fr);}}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi.c-blue::before{background:#2563eb;}
+.kpi.c-teal::before{background:#0d9488;}
+.kpi.c-purple::before{background:#7c3aed;}
+.kpi.c-green::before{background:#16a34a;}
+.kpi.c-amber::before{background:#d97706;}
+.kpi.c-gray::before{background:#888;}
+.kpi.c-red::before{background:#dc2626;}
+.kpi-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}
+.kpi-value{font-size:22px;font-weight:600;color:var(--text);line-height:1;}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:4px;font-family:'DM Mono',monospace;}
+
+/* Charts layout */
+.charts-top{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.charts-bottom{display:grid;grid-template-columns:1fr 1fr 120px;gap:14px;margin-bottom:1.5rem;}
+@media(max-width:900px){.charts-top,.charts-bottom{grid-template-columns:1fr;}}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;}
+.chart-title{font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1rem;}
+.chart-wrap{position:relative;height:200px;}
+
+/* ASN side KPIs */
+.asn-side{display:flex;flex-direction:column;gap:12px;}
+.asn-side .kpi{flex:1;}
+
+/* Filters */
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:1rem;}
+.filter-group{display:flex;flex-direction:column;gap:3px;}
+.filter-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;padding-left:2px;}
+
+.ms-wrap{position:relative;}
+.ms-btn{
+  font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;
+  padding:7px 26px 7px 10px;border:1px solid var(--border);border-radius:var(--radius);
+  background:var(--surface);color:var(--text);white-space:nowrap;min-width:110px;
+  position:relative;user-select:none;display:inline-block;
+}
+.ms-btn::after{content:'▾';position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);}
+.ms-drop{
+  display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:500;
+  background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);
+  box-shadow:0 4px 16px rgba(0,0,0,0.12);min-width:160px;max-height:240px;overflow-y:auto;
+}
+.ms-drop.open{display:block;}
+.ms-opt{display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:13px;cursor:pointer;}
+.ms-opt:hover{background:var(--surface2);}
+.ms-opt input{cursor:pointer;accent-color:var(--red);flex-shrink:0;}
+.ms-all{display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--border);font-weight:500;}
+.ms-all:hover{background:var(--surface2);}
+.ms-all input{cursor:pointer;accent-color:var(--red);flex-shrink:0;}
+
+.toolbar input[type=text]{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;}
+.toolbar input[type=text]:focus{border-color:var(--border2);}
+.sep{flex:1;}
+.count-badge{font-size:12px;color:var(--text2);font-family:'DM Mono',monospace;padding:6px 12px;background:var(--surface2);border-radius:var(--radius);border:1px solid var(--border);}
+.btn-clear{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 14px;background:var(--surface);color:var(--text2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;transition:all 0.15s;}
+.btn-clear:hover{background:var(--surface2);color:var(--text);}
+.btn-refresh{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 14px;background:var(--text);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;}
+.btn-refresh:hover{opacity:0.82;}
+
+/* Table */
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:980px;}
+thead th{background:var(--surface2);color:var(--text2);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+thead th:hover{color:var(--text);}
+thead th.sorted{color:var(--text);}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:#fafaf7;}
+td.col-np{min-width:115px;}
+
+.badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:500;white-space:nowrap;}
+.badge-confirmada{background:#dcfce7;color:#15803d;}
+.badge-estimada{background:#fef9c3;color:#a16207;}
+.badge-other{background:var(--surface2);color:var(--text2);}
+.badge-con-asn{background:#dbeafe;color:#1e40af;}
+.badge-sin-asn{background:#fee2e2;color:#991b1b;}
+
+.num{font-family:'DM Mono',monospace;font-size:12px;}
+.empty-row td{text-align:center;padding:3rem;color:var(--text3);font-size:14px;}
+
+.loading-overlay{position:fixed;inset:0;background:rgba(245,244,240,0.92);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px;}
+.spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--text);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-overlay p{font-size:13px;color:var(--text2);}
+#status-bar{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;padding:0.6rem 0;}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loader">
+  <div class="spinner"></div>
+  <p>Cargando datos...</p>
+</div>
+
+<header>
+  <h1>Próximos Arribos</h1>
+  <span class="logo-text">loginter</span>
+</header>
+
+<div class="container">
+
+  <!-- KPIs top row: Órdenes | Unidades | Marcas | SKUs | Fecha Confirmada | Fecha Estimada -->
+  <div class="kpi-row top">
+    <div class="kpi c-blue">
+      <div class="kpi-label">Órdenes</div>
+      <div class="kpi-value" id="k-ordenes">—</div>
+      <div class="kpi-sub">registros</div>
+    </div>
+    <div class="kpi c-teal">
+      <div class="kpi-label">Unidades totales</div>
+      <div class="kpi-value" id="k-unidades">—</div>
+    </div>
+    <div class="kpi c-purple">
+      <div class="kpi-label">Marcas</div>
+      <div class="kpi-value" id="k-marcas">—</div>
+      <div class="kpi-sub">distintas</div>
+    </div>
+    <div class="kpi c-gray">
+      <div class="kpi-label">SKUs totales</div>
+      <div class="kpi-value" id="k-skus">—</div>
+    </div>
+    <div class="kpi c-green">
+      <div class="kpi-label">Fecha confirmada</div>
+      <div class="kpi-value" id="k-confirm">—</div>
+      <div class="kpi-sub">arribos</div>
+    </div>
+    <div class="kpi c-amber">
+      <div class="kpi-label">Fecha estimada</div>
+      <div class="kpi-value" id="k-estim">—</div>
+      <div class="kpi-sub">arribos</div>
+    </div>
+  </div>
+
+  <!-- Charts top -->
+  <div class="charts-top">
+    <div class="chart-card">
+      <div class="chart-title">Unidades por marca</div>
+      <div class="chart-wrap"><canvas id="chart-marca"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Unidades por fecha de arribo</div>
+      <div class="chart-wrap"><canvas id="chart-fecha"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Charts bottom: anillo | torta | ASN KPIs -->
+  <div class="charts-bottom">
+    <div class="chart-card">
+      <div class="chart-title">Estado de arribos</div>
+      <div class="chart-wrap"><canvas id="chart-status"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">ASN — Con vs Sin</div>
+      <div class="chart-wrap"><canvas id="chart-asn"></canvas></div>
+    </div>
+    <div class="asn-side">
+      <div class="kpi c-blue" style="display:flex;flex-direction:column;justify-content:center;">
+        <div class="kpi-label">Con ASN</div>
+        <div class="kpi-value" id="k-con-asn">—</div>
+        <div class="kpi-sub">órdenes</div>
+      </div>
+      <div class="kpi c-red" style="display:flex;flex-direction:column;justify-content:center;">
+        <div class="kpi-label">Sin ASN</div>
+        <div class="kpi-value" id="k-sin-asn">—</div>
+        <div class="kpi-sub">órdenes</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="filter-group">
+      <span class="filter-label">Marca</span>
+      <div class="ms-wrap" id="ms-marca">
+        <div class="ms-btn" onclick="toggleDrop('ms-marca')">Todas</div>
+        <div class="ms-drop" id="drop-marca"></div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Estado</span>
+      <div class="ms-wrap" id="ms-status">
+        <div class="ms-btn" onclick="toggleDrop('ms-status')">Todos</div>
+        <div class="ms-drop" id="drop-status"></div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Mes</span>
+      <div class="ms-wrap" id="ms-mes">
+        <div class="ms-btn" onclick="toggleDrop('ms-mes')">Todos</div>
+        <div class="ms-drop" id="drop-mes"></div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Fecha arribo</span>
+      <div class="ms-wrap" id="ms-fecha">
+        <div class="ms-btn" onclick="toggleDrop('ms-fecha')">Todas</div>
+        <div class="ms-drop" id="drop-fecha"></div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">ASN</span>
+      <div class="ms-wrap" id="ms-asn">
+        <div class="ms-btn" onclick="toggleDrop('ms-asn')">Todos</div>
+        <div class="ms-drop" id="drop-asn"></div>
+      </div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Buscar</span>
+      <input type="text" id="f-search" placeholder="NP, SKU, contenedor..." style="min-width:180px">
+    </div>
+    <div class="sep"></div>
+    <button class="btn-clear" onclick="limpiarFiltros()">✕ Limpiar filtros</button>
+    <button class="btn-refresh" onclick="loadData()">↻ Actualizar</button>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy(0)">Fecha ETA <span class="sa">↕</span></th>
+            <th onclick="sortBy(1)">Fecha arribo TL <span class="sa">↕</span></th>
+            <th onclick="sortBy(2)">Mes <span class="sa">↕</span></th>
+            <th onclick="sortBy(3)">Marca <span class="sa">↕</span></th>
+            <th onclick="sortBy(4)">ASN <span class="sa">↕</span></th>
+            <th onclick="sortBy(5)" class="col-np">NP Corven <span class="sa">↕</span></th>
+            <th onclick="sortBy(6)">Dimensión pallet <span class="sa">↕</span></th>
+            <th onclick="sortBy(7)">N° Contenedor <span class="sa">↕</span></th>
+            <th onclick="sortBy(8)" style="text-align:right">Qty SKU <span class="sa">↕</span></th>
+            <th onclick="sortBy(9)" style="text-align:right">Unid. totales <span class="sa">↕</span></th>
+            <th onclick="sortBy(10)">Status <span class="sa">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div id="status-bar"></div>
+</div>
+
+<!-- Load Chart.js ONLY — no datalabels plugin -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-ElVsKzXGfIFq4yC4RshpJhQ7IGb7JlBpmjshI4kK4T0H6Gg1LyiOeLt6Raf_OE3HYum8LPOmOPYd/pub?gid=1842608063&single=true&output=csv";
+
+let allRows = [], headers = [], colMap = {};
+let sortCol = -1, sortDir = 1;
+const chartInstances = {};
+
+function destroyChart(id) {
+  if (chartInstances[id]) {
+    chartInstances[id].destroy();
+    chartInstances[id] = null;
+  }
+}
+
+function makeChart(id, cfg) {
+  destroyChart(id);
+  chartInstances[id] = new Chart(document.getElementById(id).getContext('2d'), cfg);
+}
+
+// ── Multi-select ──────────────────────────────────────────────────────────────
+function toggleDrop(msId) {
+  document.querySelectorAll('.ms-drop.open').forEach(d => {
+    if (d.closest('.ms-wrap').id !== msId) d.classList.remove('open');
+  });
+  document.querySelector('#' + msId + ' .ms-drop').classList.toggle('open');
+}
+document.addEventListener('click', e => {
+  if (!e.target.closest('.ms-wrap'))
+    document.querySelectorAll('.ms-drop.open').forEach(d => d.classList.remove('open'));
+});
+
+function getMS(msId) {
+  return [...document.querySelectorAll('#' + msId + ' .ms-opt input:checked')].map(c => c.value);
+}
+
+function updateBtn(msId, allLabel) {
+  const sel = getMS(msId);
+  document.querySelector('#' + msId + ' .ms-btn').textContent =
+    sel.length === 0 ? allLabel : sel.length === 1 ? sel[0] : sel.length + ' selec.';
+}
+
+function buildDrop(dropId, msId, values, allLabel) {
+  const drop = document.getElementById(dropId);
+  drop.innerHTML = '';
+
+  const allRow = document.createElement('label');
+  allRow.className = 'ms-all';
+  const allCb = document.createElement('input');
+  allCb.type = 'checkbox'; allCb.checked = true;
+  allCb.addEventListener('change', () => {
+    drop.querySelectorAll('.ms-opt input').forEach(c => c.checked = allCb.checked);
+    updateBtn(msId, allLabel);
+    renderTable();
+  });
+  allRow.appendChild(allCb);
+  allRow.appendChild(document.createTextNode(' ' + allLabel));
+  drop.appendChild(allRow);
+  // guardar allLabel en el botón para poder resetearlo
+  document.querySelector('#' + msId + ' .ms-btn').dataset.all = allLabel;
+
+  values.forEach(v => {
+    const lbl = document.createElement('label');
+    lbl.className = 'ms-opt';
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.value = v;
+    cb.addEventListener('change', () => {
+      const opts = [...drop.querySelectorAll('.ms-opt input')];
+      allCb.checked = opts.every(c => c.checked);
+      updateBtn(msId, allLabel);
+      renderTable();
+    });
+    lbl.appendChild(cb);
+    lbl.appendChild(document.createTextNode(' ' + v));
+    drop.appendChild(lbl);
+  });
+}
+
+// ── CSV / Data ────────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  return text.trim().split('\n').map(line => {
+    const res = []; let cur = '', inQ = false;
+    for (const c of line) {
+      if (c === '"') inQ = !inQ;
+      else if (c === ',' && !inQ) { res.push(cur.trim()); cur = ''; }
+      else cur += c;
+    }
+    res.push(cur.trim());
+    return res;
+  });
+}
+
+function findCol(kws) {
+  for (const kw of kws) {
+    const i = headers.findIndex(h => h.toLowerCase().includes(kw.toLowerCase()));
+    if (i !== -1) return i;
+  }
+  return -1;
+}
+
+function buildColMap() {
+  colMap = {
+    fechaETA:   findCol(['fecha eta']),
+    fechaTL:    findCol(['fecha arribo tl', 'arribo tl']),
+    mes:        findCol(['mes']),
+    marca:      findCol(['marca']),
+    asn:        findCol(['asn']),
+    np:         findCol(['np corven']),
+    dim:        findCol(['dimensi', 'pallet']),
+    contenedor: findCol(['contenedor']),
+    qtySku:     findCol(['qty', 'sku']),
+    unidades:   findCol(['unidades totales', 'unidades']),
+    status:     findCol(['status']),
+  };
+}
+
+function getV(row, key) {
+  const i = colMap[key];
+  return (i !== undefined && i !== -1 && i < row.length) ? (row[i] || '') : '';
+}
+
+function num(v) { return parseFloat(String(v).replace(',', '.')) || 0; }
+function isSinASN(v) { return v.toLowerCase().includes('sin asn') || v.trim() === ''; }
+
+function parseDateAR(s) {
+  if (!s) return '';
+  const p = s.trim().split('/');
+  return p.length === 3 ? p[2] + p[1].padStart(2, '0') + p[0].padStart(2, '0') : s;
+}
+
+// ── Filters ───────────────────────────────────────────────────────────────────
+function getFiltered() {
+  const marcas   = getMS('ms-marca');
+  const statuses = getMS('ms-status');
+  const meses    = getMS('ms-mes');
+  const fechas   = getMS('ms-fecha');
+  const asnSel   = getMS('ms-asn');
+  const search   = document.getElementById('f-search').value.toLowerCase();
+
+  return allRows.filter(r => {
+    const asnVal = getV(r, 'asn');
+    let asnOk = true;
+    if (asnSel.length > 0) {
+      asnOk = (asnSel.includes('Sin ASN') && isSinASN(asnVal)) ||
+               (asnSel.includes('Con ASN') && !isSinASN(asnVal));
+    }
+    return (
+      (marcas.length === 0   || marcas.includes(getV(r, 'marca'))) &&
+      (statuses.length === 0 || statuses.includes(getV(r, 'status'))) &&
+      (meses.length === 0    || meses.includes(getV(r, 'mes'))) &&
+      (fechas.length === 0   || fechas.includes(getV(r, 'fechaTL'))) &&
+      asnOk &&
+      (!search || r.some(c => c.toLowerCase().includes(search)))
+    );
+  });
+}
+
+// ── Sort ──────────────────────────────────────────────────────────────────────
+function applySort(rows) {
+  if (sortCol < 0) return rows;
+  const keys = ['fechaETA','fechaTL','mes','marca','asn','np','dim','contenedor','qtySku','unidades','status'];
+  const key = keys[sortCol];
+  return [...rows].sort((a, b) => {
+    const av = getV(a, key), bv = getV(b, key);
+    const da = parseDateAR(av), db = parseDateAR(bv);
+    if (da && da !== av) return da.localeCompare(db) * sortDir;
+    const an = num(av), bn = num(bv);
+    if (!isNaN(an) && !isNaN(bn) && av.match(/^[\d.,]+$/)) return (an - bn) * sortDir;
+    return av.localeCompare(bv, 'es') * sortDir;
+  });
+}
+
+function sortBy(col) {
+  sortDir = sortCol === col ? sortDir * -1 : 1;
+  sortCol = col;
+  document.querySelectorAll('thead th').forEach((th, i) => {
+    th.classList.toggle('sorted', i === col);
+    const s = th.querySelector('.sa');
+    if (s) s.textContent = i === col ? (sortDir === 1 ? '↑' : '↓') : '↕';
+  });
+  renderTable();
+}
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+function badgeASN(v) {
+  return isSinASN(v)
+    ? '<span class="badge badge-sin-asn">Sin ASN</span>'
+    : '<span class="badge badge-con-asn">' + v + '</span>';
+}
+function badgeStatus(v) {
+  if (!v) return '<span class="badge badge-other">—</span>';
+  const vl = v.toLowerCase();
+  if (vl.includes('confirm')) return '<span class="badge badge-confirmada">' + v + '</span>';
+  if (vl.includes('estim'))   return '<span class="badge badge-estimada">'   + v + '</span>';
+  return '<span class="badge badge-other">' + v + '</span>';
+}
+
+// ── Render table ──────────────────────────────────────────────────────────────
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  const rows = applySort(getFiltered());
+  // count-badge removido
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="11">Sin resultados</td></tr>';
+    updateKPIs([]);
+    updateCharts([]);
+    return;
+  }
+
+  tbody.innerHTML = rows.map(r =>
+    '<tr>' +
+    '<td>' + (getV(r,'fechaETA') || '—') + '</td>' +
+    '<td>' + (getV(r,'fechaTL')  || '—') + '</td>' +
+    '<td class="num">' + (getV(r,'mes') || '—') + '</td>' +
+    '<td><strong>' + (getV(r,'marca') || '—') + '</strong></td>' +
+    '<td>' + badgeASN(getV(r,'asn')) + '</td>' +
+    '<td class="num col-np">' + (getV(r,'np') || '—') + '</td>' +
+    '<td>' + (getV(r,'dim') || '—') + '</td>' +
+    '<td class="num">' + (getV(r,'contenedor') || '—') + '</td>' +
+    '<td class="num" style="text-align:right">' + (getV(r,'qtySku') || '—') + '</td>' +
+    '<td class="num" style="text-align:right">' + (num(getV(r,'unidades')) ? Number(num(getV(r,'unidades'))).toLocaleString('es-AR') : '—') + '</td>' +
+    '<td>' + badgeStatus(getV(r,'status')) + '</td>' +
+    '</tr>'
+  ).join('');
+
+  updateKPIs(rows);
+  updateCharts(rows);
+}
+
+// ── KPIs ──────────────────────────────────────────────────────────────────────
+function updateKPIs(rows) {
+  const totalUnid   = rows.reduce((a, r) => a + num(getV(r,'unidades')), 0);
+  const marcas      = new Set(rows.map(r => getV(r,'marca')).filter(Boolean));
+  const confirmados = rows.filter(r => getV(r,'status').toLowerCase().includes('confirm')).length;
+  const estimados   = rows.filter(r => getV(r,'status').toLowerCase().includes('estim')).length;
+  const totalSKUs   = rows.reduce((a, r) => a + num(getV(r,'qtySku')), 0);
+  const sinASN      = rows.filter(r => isSinASN(getV(r,'asn'))).length;
+  const conASN      = rows.length - sinASN;
+
+  document.getElementById('k-ordenes').textContent  = rows.length;
+  document.getElementById('k-unidades').textContent = Math.round(totalUnid).toLocaleString('es-AR');
+  document.getElementById('k-marcas').textContent   = marcas.size;
+  document.getElementById('k-skus').textContent     = Math.round(totalSKUs).toLocaleString('es-AR');
+  document.getElementById('k-confirm').textContent  = confirmados;
+  document.getElementById('k-estim').textContent    = estimados;
+  document.getElementById('k-con-asn').textContent  = conASN;
+  document.getElementById('k-sin-asn').textContent  = sinASN;
+}
+
+// ── Charts ────────────────────────────────────────────────────────────────────
+const COLORS = ['#2563eb','#16a34a','#d97706','#7c3aed','#0d9488','#dc2626','#db2777','#ea580c','#0891b2','#65a30d'];
+
+function pct(val, total) { return total ? Math.round(val / total * 100) + '%' : '0%'; }
+
+function updateCharts(rows) {
+  // Chart 1: Barras por marca
+  const marcaMap = {};
+  rows.forEach(r => {
+    const m = getV(r,'marca') || 'Sin marca';
+    marcaMap[m] = (marcaMap[m] || 0) + num(getV(r,'unidades'));
+  });
+  const mL = Object.keys(marcaMap).sort((a,b) => marcaMap[b] - marcaMap[a]).slice(0, 10);
+  makeChart('chart-marca', {
+    type: 'bar',
+    data: {
+      labels: mL,
+      datasets: [{ data: mL.map(k => Math.round(marcaMap[k])), backgroundColor: COLORS.slice(0, mL.length), borderRadius: 4, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 11 }, color: '#6b6860' } },
+        y: { grid: { color: '#e2e0d8' }, ticks: { font: { size: 11 }, color: '#6b6860', callback: v => v.toLocaleString('es-AR') } }
+      }
+    }
+  });
+
+  // Chart 2: Barras por fecha
+  const fechaMap = {};
+  rows.forEach(r => {
+    const f = getV(r,'fechaTL');
+    if (f) fechaMap[f] = (fechaMap[f] || 0) + num(getV(r,'unidades'));
+  });
+  const fL = Object.keys(fechaMap).sort((a, b) => parseDateAR(a).localeCompare(parseDateAR(b)));
+  makeChart('chart-fecha', {
+    type: 'bar',
+    data: {
+      labels: fL,
+      datasets: [{ data: fL.map(k => Math.round(fechaMap[k])), backgroundColor: '#0d9488', borderRadius: 4, borderSkipped: false }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { grid: { display: false }, ticks: { font: { size: 10 }, color: '#6b6860', maxRotation: 45 } },
+        y: { grid: { color: '#e2e0d8' }, ticks: { font: { size: 11 }, color: '#6b6860', callback: v => v.toLocaleString('es-AR') } }
+      }
+    }
+  });
+
+  // Chart 3: Anillo de estado — porcentajes en tooltip
+  const statusMap = {};
+  rows.forEach(r => { const s = getV(r,'status') || 'Sin estado'; statusMap[s] = (statusMap[s] || 0) + 1; });
+  const sL = Object.keys(statusMap);
+  const sD = sL.map(k => statusMap[k]);
+  const sTotal = sD.reduce((a,b) => a+b, 0);
+  const sC = sL.map(l => { const ll = l.toLowerCase(); return ll.includes('confirm') ? '#16a34a' : ll.includes('estim') ? '#d97706' : '#a09e99'; });
+  makeChart('chart-status', {
+    type: 'doughnut',
+    data: { labels: sL, datasets: [{ data: sD, backgroundColor: sC, borderWidth: 2, borderColor: '#fff' }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, color: '#6b6860', padding: 12,
+          generateLabels: chart => chart.data.labels.map((l, i) => ({
+            text: l + ' ' + pct(chart.data.datasets[0].data[i], sTotal),
+            fillStyle: chart.data.datasets[0].backgroundColor[i],
+            index: i
+          }))
+        }},
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + ctx.raw + ' (' + pct(ctx.raw, sTotal) + ')' }}
+      },
+      cutout: '55%'
+    }
+  });
+
+  // Chart 4: Torta ASN — porcentajes en tooltip
+  const sinTotal = rows.filter(r => isSinASN(getV(r,'asn'))).length;
+  const conTotal = rows.length - sinTotal;
+  const asnTotal = rows.length;
+  makeChart('chart-asn', {
+    type: 'pie',
+    data: {
+      labels: ['Con ASN', 'Sin ASN'],
+      datasets: [{ data: [conTotal, sinTotal], backgroundColor: ['#2563eb','#dc2626'], borderWidth: 2, borderColor: '#fff' }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'bottom', labels: { font: { size: 11 }, color: '#6b6860', padding: 12,
+          generateLabels: chart => [
+            { text: 'Con ASN ' + pct(conTotal, asnTotal), fillStyle: '#2563eb', index: 0 },
+            { text: 'Sin ASN ' + pct(sinTotal, asnTotal), fillStyle: '#dc2626', index: 1 }
+          ]
+        }},
+        tooltip: { callbacks: { label: ctx => ' ' + ctx.label + ': ' + ctx.raw + ' (' + pct(ctx.raw, asnTotal) + ')' }}
+      }
+    }
+  });
+}
+
+// ── Populate filters ──────────────────────────────────────────────────────────
+function populateFilters() {
+  const uniq = key => [...new Set(allRows.map(r => getV(r, key)).filter(Boolean))].sort();
+  buildDrop('drop-marca',  'ms-marca',  uniq('marca'),  'Todas');
+  buildDrop('drop-status', 'ms-status', uniq('status'), 'Todos');
+  buildDrop('drop-mes',    'ms-mes',    uniq('mes'),    'Todos');
+  const fechasOrd = [...new Set(allRows.map(r => getV(r,'fechaTL')).filter(Boolean))]
+    .sort((a,b) => parseDateAR(a).localeCompare(parseDateAR(b)));
+  buildDrop('drop-fecha', 'ms-fecha', fechasOrd, 'Todas');
+  buildDrop('drop-asn',   'ms-asn',  ['Con ASN','Sin ASN'], 'Todos');
+}
+
+// ── Limpiar filtros ───────────────────────────────────────────────────────────
+function limpiarFiltros() {
+  ['ms-marca','ms-status','ms-mes','ms-fecha','ms-asn'].forEach(msId => {
+    const drop = document.querySelector('#' + msId + ' .ms-drop');
+    // marcar el checkbox "todos"
+    const allCb = drop.querySelector('.ms-all input');
+    if (allCb) { allCb.checked = true; }
+    // desmarcar todas las opciones individuales
+    drop.querySelectorAll('.ms-opt input').forEach(c => c.checked = false);
+    // resetear el botón
+    const btn = document.querySelector('#' + msId + ' .ms-btn');
+    btn.textContent = btn.dataset.all || 'Todos';
+  });
+  document.getElementById('f-search').value = '';
+  renderTable();
+}
+
+document.getElementById('f-search').addEventListener('input', renderTable);
+
+// ── Load data ─────────────────────────────────────────────────────────────────
+function loadData() {
+  document.getElementById('loader').style.display = 'flex';
+  fetch(CSV_URL)
+    .then(r => r.text())
+    .then(text => {
+      const rows = parseCSV(text);
+      if (rows.length < 2) throw new Error('Sin datos');
+
+      const headerRow = rows.findIndex(r => r.some(c => c.trim() !== ''));
+      headers = rows[headerRow];
+      allRows = rows.slice(headerRow + 1).filter(r => r.some(c => c.trim() !== ''));
+      buildColMap();
+
+      // Propagación inteligente de celdas combinadas
+      const iMarca = colMap.marca, iDim = colMap.dim, iCont = colMap.contenedor, iUnid = colMap.unidades;
+      let lastMarca = '', lastFechaETA = '', lastFechaTL = '', lastMes = '', lastCont = '';
+
+      allRows.forEach(r => {
+        const marcaVal = iMarca !== -1 ? (r[iMarca] || '') : '';
+        const dimVal   = iDim   !== -1 ? (r[iDim]   || '') : '';
+        const contVal  = iCont  !== -1 ? (r[iCont]  || '') : '';
+        const unidVal  = iUnid  !== -1 ? (r[iUnid]  || '') : '';
+
+        if (marcaVal.trim() !== '') {
+          lastMarca    = marcaVal;
+          lastFechaETA = colMap.fechaETA !== -1 ? (r[colMap.fechaETA] || '') : '';
+          lastFechaTL  = colMap.fechaTL  !== -1 ? (r[colMap.fechaTL]  || '') : '';
+          lastMes      = colMap.mes      !== -1 ? (r[colMap.mes]      || '') : '';
+        } else {
+          if (lastMarca    && iMarca          !== -1) r[iMarca]           = lastMarca;
+          if (lastFechaETA && colMap.fechaETA !== -1 && !(r[colMap.fechaETA] || '').trim()) r[colMap.fechaETA] = lastFechaETA;
+          if (lastFechaTL  && colMap.fechaTL  !== -1 && !(r[colMap.fechaTL]  || '').trim()) r[colMap.fechaTL]  = lastFechaTL;
+          if (lastMes      && colMap.mes      !== -1 && !(r[colMap.mes]      || '').trim()) r[colMap.mes]      = lastMes;
+        }
+
+        // Contenedor: propagar solo si la fila tiene Unidades Totales con dato
+        if (contVal.trim() !== '') {
+          lastCont = contVal;
+        } else if (unidVal.trim() !== '' && num(unidVal) > 0 && lastCont && iCont !== -1) {
+          r[iCont] = lastCont;
+        } else if (contVal.trim() === '' && iCont !== -1) {
+          // No corresponde propagar — dejar vacío y resetear
+          lastCont = '';
+        }
+
+        // Dimensión: si está vacía pero hay unidades, poner comillas (mismo dato de arriba)
+        if (iDim !== -1 && dimVal.trim() === '' && unidVal.trim() !== '' && num(unidVal) > 0) {
+          r[iDim] = '"';
+        }
+      });
+
+      populateFilters();
+      renderTable();
+      document.getElementById('status-bar').textContent = allRows.length + ' filas cargadas desde Google Sheets';
+    })
+    .catch(e => {
+      document.getElementById('tbody').innerHTML = '<tr class="empty-row"><td colspan="11">Error al cargar datos: ' + e.message + '</td></tr>';
+      document.getElementById('status-bar').textContent = 'Error: ' + e.message;
+    })
+    .finally(() => { document.getElementById('loader').style.display = 'none'; });
+}
+
+loadData();
+</script>
+</body>
+</html>

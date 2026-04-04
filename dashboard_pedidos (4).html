@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedidos — Loginter</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&family=Nunito:wght@800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#f5f4f0; --surface:#fff; --surface2:#f0efe9;
+  --border:#e2e0d8; --border2:#ccc9bc;
+  --text:#1a1916; --text2:#6b6860; --text3:#a09e99;
+  --green:#1a5c3a; --radius:10px; --radius-lg:14px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+
+header{background:var(--green);padding:0 2rem;height:64px;display:flex;align-items:center;justify-content:space-between;}
+header h1{font-size:14px;font-weight:500;letter-spacing:0.06em;text-transform:uppercase;color:#fff;}
+.logo-text{font-family:'Nunito',sans-serif;font-weight:800;font-size:26px;color:#fff;}
+
+.container{max-width:1400px;margin:0 auto;padding:1.5rem 2rem;}
+
+.kpi-row{display:grid;gap:12px;margin-bottom:1.5rem;}
+.kpi-row.top{grid-template-columns:repeat(6,1fr);}
+@media(max-width:1000px){.kpi-row.top{grid-template-columns:repeat(3,1fr);}}
+.kpi{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.1rem;position:relative;overflow:hidden;}
+.kpi::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;}
+.kpi.c-blue::before{background:#2563eb;}
+.kpi.c-teal::before{background:#0d9488;}
+.kpi.c-purple::before{background:#7c3aed;}
+.kpi.c-green::before{background:#16a34a;}
+.kpi.c-amber::before{background:#d97706;}
+.kpi.c-gray::before{background:#888;}
+.kpi.c-red::before{background:#dc2626;}
+.kpi-label{font-size:11px;color:var(--text3);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:6px;}
+.kpi-value{font-size:22px;font-weight:600;color:var(--text);line-height:1;}
+.kpi-sub{font-size:11px;color:var(--text3);margin-top:4px;font-family:'DM Mono',monospace;}
+
+.charts-top{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+.charts-bottom{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:1.5rem;}
+@media(max-width:900px){.charts-top,.charts-bottom{grid-template-columns:1fr;}}
+.chart-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1.1rem 1.25rem;}
+.chart-title{font-size:12px;font-weight:500;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:1rem;}
+.chart-wrap{position:relative;height:200px;}
+
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end;margin-bottom:1rem;}
+.filter-group{display:flex;flex-direction:column;gap:3px;}
+.filter-label{font-size:10px;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;padding-left:2px;}
+.ms-wrap{position:relative;}
+.ms-btn{font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;padding:7px 26px 7px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);white-space:nowrap;min-width:110px;position:relative;user-select:none;display:inline-block;}
+.ms-btn::after{content:'▾';position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:10px;color:var(--text3);}
+.ms-drop{display:none;position:absolute;top:calc(100% + 4px);left:0;z-index:500;background:var(--surface);border:1px solid var(--border2);border-radius:var(--radius);box-shadow:0 4px 16px rgba(0,0,0,0.12);min-width:160px;max-height:240px;overflow-y:auto;}
+.ms-drop.open{display:block;}
+.ms-opt{display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:13px;cursor:pointer;}
+.ms-opt:hover{background:var(--surface2);}
+.ms-opt input{cursor:pointer;accent-color:var(--green);flex-shrink:0;}
+.ms-all{display:flex;align-items:center;gap:8px;padding:7px 12px;font-size:13px;cursor:pointer;border-bottom:1px solid var(--border);font-weight:500;}
+.ms-all:hover{background:var(--surface2);}
+.ms-all input{cursor:pointer;accent-color:var(--green);flex-shrink:0;}
+.toolbar input[type=text]{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 10px;border:1px solid var(--border);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none;}
+.toolbar input[type=text]:focus{border-color:var(--border2);}
+.sep{flex:1;}
+.btn-clear{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 14px;background:var(--surface);color:var(--text2);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;}
+.btn-clear:hover{background:var(--surface2);color:var(--text);}
+.btn-refresh{font-family:'DM Sans',sans-serif;font-size:13px;padding:7px 14px;background:var(--green);color:#fff;border:none;border-radius:var(--radius);cursor:pointer;}
+.btn-refresh:hover{opacity:0.82;}
+
+.table-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;}
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:1100px;}
+thead th{background:var(--surface2);color:var(--text2);font-weight:500;font-size:11px;text-transform:uppercase;letter-spacing:0.05em;padding:10px 12px;text-align:left;border-bottom:1px solid var(--border);white-space:nowrap;cursor:pointer;user-select:none;}
+thead th:hover{color:var(--text);}
+thead th.sorted{color:var(--text);}
+tbody td{padding:9px 12px;border-bottom:1px solid var(--border);color:var(--text);vertical-align:middle;}
+tbody tr:last-child td{border-bottom:none;}
+tbody tr:hover td{background:#fafaf7;}
+
+.badge{display:inline-block;padding:3px 9px;border-radius:99px;font-size:11px;font-weight:500;white-space:nowrap;}
+.badge-finalizado{background:#dcfce7;color:#15803d;}
+.badge-pendiente{background:#fef9c3;color:#a16207;}
+.badge-cancelado{background:#fee2e2;color:#991b1b;}
+.badge-other{background:var(--surface2);color:var(--text2);}
+
+.num{font-family:'DM Mono',monospace;font-size:12px;}
+.empty-row td{text-align:center;padding:3rem;color:var(--text3);font-size:14px;}
+
+.loading-overlay{position:fixed;inset:0;background:rgba(245,244,240,0.92);display:flex;align-items:center;justify-content:center;z-index:999;flex-direction:column;gap:12px;}
+.spinner{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--green);border-radius:50%;animation:spin 0.7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg);}}
+.loading-overlay p{font-size:13px;color:var(--text2);}
+#status-bar{font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;padding:0.6rem 0;}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loader">
+  <div class="spinner"></div>
+  <p>Cargando datos...</p>
+</div>
+
+<header>
+  <h1>Pedidos — Backlog</h1>
+  <span class="logo-text">loginter</span>
+</header>
+
+<div class="container">
+
+  <div class="kpi-row top">
+    <div class="kpi c-blue"><div class="kpi-label">Pedidos</div><div class="kpi-value" id="k-pedidos">—</div><div class="kpi-sub">total</div></div>
+    <div class="kpi c-teal"><div class="kpi-label">Unidades pedidas</div><div class="kpi-value" id="k-unid-ped">—</div></div>
+    <div class="kpi c-purple"><div class="kpi-label">Líneas</div><div class="kpi-value" id="k-lineas">—</div></div>
+    <div class="kpi c-gray"><div class="kpi-label">Unidades confirmadas</div><div class="kpi-value" id="k-unid-conf">—</div></div>
+    <div class="kpi c-green"><div class="kpi-label">Finalizados</div><div class="kpi-value" id="k-final">—</div><div class="kpi-sub">pedidos</div></div>
+    <div class="kpi c-amber"><div class="kpi-label">Pendientes</div><div class="kpi-value" id="k-pend">—</div><div class="kpi-sub">pedidos</div></div>
+  </div>
+
+  <div class="charts-top">
+    <div class="chart-card">
+      <div class="chart-title">Unidades y líneas pedidas por marca</div>
+      <div class="chart-wrap"><canvas id="chart-marca"></canvas></div>
+    </div>
+    <div class="chart-card">
+      <div class="chart-title">Pedidos y unidades por estado</div>
+      <div class="chart-wrap"><canvas id="chart-estado"></canvas></div>
+    </div>
+  </div>
+
+  <div class="charts-bottom" style="grid-template-columns:1fr;">
+    <div class="chart-card">
+      <div class="chart-title">Distribución por tipo de pedido</div>
+      <div class="chart-wrap"><canvas id="chart-tipo"></canvas></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="filter-group">
+      <span class="filter-label">Marca</span>
+      <div class="ms-wrap" id="ms-marca"><div class="ms-btn" onclick="toggleDrop('ms-marca')">Todas</div><div class="ms-drop" id="drop-marca"></div></div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Estado</span>
+      <div class="ms-wrap" id="ms-estado"><div class="ms-btn" onclick="toggleDrop('ms-estado')">Todos</div><div class="ms-drop" id="drop-estado"></div></div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Tipo de pedido</span>
+      <div class="ms-wrap" id="ms-tipo"><div class="ms-btn" onclick="toggleDrop('ms-tipo')">Todos</div><div class="ms-drop" id="drop-tipo"></div></div>
+    </div>
+    <div class="filter-group">
+      <span class="filter-label">Buscar</span>
+      <input type="text" id="f-search" placeholder="Orden SAP, marca..." style="min-width:180px">
+    </div>
+    <div class="sep"></div>
+    <div style="display:flex;flex-direction:column;align-items:flex-end;gap:6px;">
+      <span id="update-info" style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace;">—</span>
+      <div style="display:flex;gap:8px;">
+        <button class="btn-clear" onclick="limpiarFiltros()">✕ Limpiar filtros</button>
+        <button class="btn-refresh" onclick="loadData()">↻ Actualizar</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-card">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th onclick="sortBy(1)">Orden SAP <span class="sa">↕</span></th>
+            <th onclick="sortBy(2)">Orden Infor <span class="sa">↕</span></th>
+            <th onclick="sortBy(3)">Mes <span class="sa">↕</span></th>
+            <th onclick="sortBy(4)">Creación <span class="sa">↕</span></th>
+            <th onclick="sortBy(5)" style="text-align:right">Líneas <span class="sa">↕</span></th>
+            <th onclick="sortBy(6)" style="text-align:right">Unid. pedidas <span class="sa">↕</span></th>
+            <th onclick="sortBy(7)" style="text-align:right">Unid. confirmadas <span class="sa">↕</span></th>
+            <th onclick="sortBy(8)">Estado <span class="sa">↕</span></th>
+            <th onclick="sortBy(9)">Avance prep. <span class="sa">↕</span></th>
+            <th onclick="sortBy(14)">Marca <span class="sa">↕</span></th>
+            <th onclick="sortBy(13)">Tipo pedido <span class="sa">↕</span></th>
+            <th onclick="sortBy(11)">Tipo SAP <span class="sa">↕</span></th>
+          </tr>
+        </thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+  <div id="status-bar"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vSLQWkhqF_hC4v6MjBKXBuWV8XaMtTL5F3Zn2l6efVjMf7EdMNJxxCsmuU9raeCug/pub?gid=941366860&single=true&output=csv";
+
+let allRows = [], headers = [], colMap = {};
+let sortCol = -1, sortDir = 1;
+const charts = {};
+
+function destroyChart(id) { if (charts[id]) { charts[id].destroy(); charts[id] = null; } }
+function makeChart(id, cfg) { destroyChart(id); charts[id] = new Chart(document.getElementById(id).getContext('2d'), cfg); }
+
+// ── Multi-select ──────────────────────────────────────────────────────────────
+function toggleDrop(msId) {
+  document.querySelectorAll('.ms-drop.open').forEach(d => { if (d.closest('.ms-wrap').id !== msId) d.classList.remove('open'); });
+  document.querySelector('#' + msId + ' .ms-drop').classList.toggle('open');
+}
+document.addEventListener('click', e => { if (!e.target.closest('.ms-wrap')) document.querySelectorAll('.ms-drop.open').forEach(d => d.classList.remove('open')); });
+
+function getMS(msId) { return [...document.querySelectorAll('#' + msId + ' .ms-opt input:checked')].map(c => c.value); }
+
+function updateBtn(msId, allLabel) {
+  const sel = getMS(msId);
+  document.querySelector('#' + msId + ' .ms-btn').textContent = sel.length === 0 ? allLabel : sel.length === 1 ? sel[0] : sel.length + ' selec.';
+}
+
+function buildDrop(dropId, msId, values, allLabel) {
+  const drop = document.getElementById(dropId);
+  drop.innerHTML = '';
+  const allRow = document.createElement('label');
+  allRow.className = 'ms-all';
+  const allCb = document.createElement('input');
+  allCb.type = 'checkbox'; allCb.checked = true;
+  allCb.addEventListener('change', () => { drop.querySelectorAll('.ms-opt input').forEach(c => c.checked = allCb.checked); updateBtn(msId, allLabel); renderTable(); });
+  allRow.appendChild(allCb); allRow.appendChild(document.createTextNode(' ' + allLabel));
+  drop.appendChild(allRow);
+  document.querySelector('#' + msId + ' .ms-btn').dataset.all = allLabel;
+  values.forEach(v => {
+    const lbl = document.createElement('label'); lbl.className = 'ms-opt';
+    const cb = document.createElement('input'); cb.type = 'checkbox'; cb.value = v;
+    cb.addEventListener('change', () => { allCb.checked = [...drop.querySelectorAll('.ms-opt input')].every(c => c.checked); updateBtn(msId, allLabel); renderTable(); });
+    lbl.appendChild(cb); lbl.appendChild(document.createTextNode(' ' + v)); drop.appendChild(lbl);
+  });
+}
+
+function limpiarFiltros() {
+  ['ms-marca','ms-estado','ms-tipo'].forEach(msId => {
+    const drop = document.querySelector('#' + msId + ' .ms-drop');
+    const allCb = drop.querySelector('.ms-all input');
+    if (allCb) allCb.checked = true;
+    drop.querySelectorAll('.ms-opt input').forEach(c => c.checked = false);
+    const btn = document.querySelector('#' + msId + ' .ms-btn');
+    btn.textContent = btn.dataset.all || 'Todos';
+  });
+  document.getElementById('f-search').value = '';
+  renderTable();
+}
+
+// ── CSV ───────────────────────────────────────────────────────────────────────
+function parseCSV(text) {
+  return text.trim().split('\n').map(line => {
+    const res = []; let cur = '', inQ = false;
+    for (const c of line) { if (c === '"') inQ = !inQ; else if (c === ',' && !inQ) { res.push(cur.trim()); cur = ''; } else cur += c; }
+    res.push(cur.trim()); return res;
+  });
+}
+
+function findCol(kws) {
+  for (const kw of kws) { const i = headers.findIndex(h => h.toLowerCase().includes(kw.toLowerCase())); if (i !== -1) return i; }
+  return -1;
+}
+
+function buildColMap() {
+  colMap = {
+    item:         findCol(['ítem','item']),
+    ordenSAP:     findCol(['orden sap']),
+    ordenInfor:   findCol(['orden infor']),
+    mes:          findCol(['mes']),
+    creacion:     findCol(['creaci']),
+    lineas:       findCol(['líneas','lineas']),
+    unidPed:      findCol(['unid. pedidas','pedidas']),
+    unidConf:     findCol(['unid. confirmadas','confirmadas']),
+    estado:       findCol(['estado']),
+    avance:       findCol(['avance']),
+    finalizacion: findCol(['finaliz']),
+    tipoSAP:      findCol(['tipo de pedido sap']),
+    backlog:      findCol(['status backlog','backlog']),
+    tipo:         findCol(['tipo de pedido']),
+    marca:        findCol(['marca']),
+  };
+  // Si tipoSAP y tipo apuntan a la misma columna, buscar la segunda ocurrencia
+  if (colMap.tipoSAP !== -1 && colMap.tipoSAP === colMap.tipo) {
+    const idx = headers.findIndex((h, i) => i > colMap.tipoSAP && h.toLowerCase().includes('tipo de pedido'));
+    colMap.tipo = idx !== -1 ? idx : colMap.tipoSAP;
+  }
+}
+
+function getV(row, key) { const i = colMap[key]; return (i !== undefined && i !== -1 && i < row.length) ? (row[i] || '') : ''; }
+function num(v) { return parseFloat(String(v).replace(/\./g,'').replace(',','.')) || 0; }
+
+function parseDateAR(s) {
+  if (!s) return '';
+  const p = s.trim().split('/');
+  return p.length === 3 ? p[2] + p[1].padStart(2,'0') + p[0].padStart(2,'0') : s;
+}
+
+// ── Filters ───────────────────────────────────────────────────────────────────
+function getFiltered() {
+  const marcas   = getMS('ms-marca');
+  const estados  = getMS('ms-estado');
+  const tipos    = getMS('ms-tipo');
+  const search   = document.getElementById('f-search').value.toLowerCase();
+  return allRows.filter(r =>
+    (marcas.length   === 0 || marcas.includes(getV(r,'marca'))) &&
+    (estados.length  === 0 || estados.includes(getV(r,'estado'))) &&
+    (tipos.length    === 0 || tipos.includes(getV(r,'tipo'))) &&
+    (!search || r.some(c => c.toLowerCase().includes(search)))
+  );
+}
+
+// ── Sort ──────────────────────────────────────────────────────────────────────
+function applySort(rows) {
+  if (sortCol < 0) return rows;
+  const keys = ['item','ordenSAP','ordenInfor','mes','creacion','lineas','unidPed','unidConf','estado','avance','finalizacion','tipoSAP','backlog','tipo','marca'];
+  const key = keys[sortCol];
+  return [...rows].sort((a, b) => {
+    const av = getV(a,key), bv = getV(b,key);
+    const da = parseDateAR(av), db = parseDateAR(bv);
+    if (da && da !== av) return da.localeCompare(db) * sortDir;
+    const an = num(av), bn = num(bv);
+    if (!isNaN(an) && !isNaN(bn) && an !== 0 && bn !== 0) return (an - bn) * sortDir;
+    return av.localeCompare(bv, 'es') * sortDir;
+  });
+}
+
+function sortBy(col) {
+  sortDir = sortCol === col ? sortDir * -1 : 1; sortCol = col;
+  document.querySelectorAll('thead th').forEach((th, i) => { th.classList.toggle('sorted', i === col); const s = th.querySelector('.sa'); if (s) s.textContent = i === col ? (sortDir===1?'↑':'↓') : '↕'; });
+  renderTable();
+}
+
+// ── Badge helpers ─────────────────────────────────────────────────────────────
+function badgeEstado(v) {
+  if (!v) return '<span class="badge badge-other">—</span>';
+  const vl = v.toLowerCase();
+  if (vl.includes('expedi') || vl.includes('complet')) return '<span class="badge badge-finalizado">' + v + '</span>';
+  if (vl.includes('cancel')) return '<span class="badge badge-cancelado">' + v + '</span>';
+  return '<span class="badge badge-pendiente">' + v + '</span>';
+}
+
+function badgeBacklog(v) {
+  if (!v) return '<span class="badge badge-other">—</span>';
+  const vl = v.toLowerCase();
+  if (vl.includes('finaliz')) return '<span class="badge badge-finalizado">' + v + '</span>';
+  return '<span class="badge badge-other">' + v + '</span>';
+}
+
+// ── Render ────────────────────────────────────────────────────────────────────
+function renderTable() {
+  const tbody = document.getElementById('tbody');
+  const rows = applySort(getFiltered());
+
+  if (!rows.length) {
+    tbody.innerHTML = '<tr class="empty-row"><td colspan="12">Sin resultados</td></tr>';
+    updateKPIs([]); updateCharts([]); return;
+  }
+
+  tbody.innerHTML = rows.map(r =>
+    '<tr>' +
+    '<td class="num">' + (getV(r,'ordenSAP')||'—') + '</td>' +
+    '<td class="num">' + (getV(r,'ordenInfor')||'—') + '</td>' +
+    '<td class="num">' + (getV(r,'mes')||'—') + '</td>' +
+    '<td>' + (getV(r,'creacion')||'—') + '</td>' +
+    '<td class="num" style="text-align:right">' + (getV(r,'lineas')||'—') + '</td>' +
+    '<td class="num" style="text-align:right">' + (num(getV(r,'unidPed')) ? num(getV(r,'unidPed')).toLocaleString('es-AR') : '—') + '</td>' +
+    '<td class="num" style="text-align:right">' + (num(getV(r,'unidConf')) ? num(getV(r,'unidConf')).toLocaleString('es-AR') : '—') + '</td>' +
+    '<td>' + badgeEstado(getV(r,'estado')) + '</td>' +
+    '<td>' + (getV(r,'avance')||'—') + '</td>' +
+    '<td><strong>' + (getV(r,'marca')||'—') + '</strong></td>' +
+    '<td>' + (getV(r,'tipo')||'—') + '</td>' +
+    '<td>' + (getV(r,'tipoSAP')||'—') + '</td>' +
+    '</tr>'
+  ).join('');
+
+  updateKPIs(rows);
+  updateCharts(rows);
+}
+
+// ── KPIs ──────────────────────────────────────────────────────────────────────
+function updateKPIs(rows) {
+  const unidPed  = rows.reduce((a,r) => a + num(getV(r,'unidPed')), 0);
+  const unidConf = rows.reduce((a,r) => a + num(getV(r,'unidConf')), 0);
+  const lineas   = rows.reduce((a,r) => a + num(getV(r,'lineas')), 0);
+  const final    = rows.filter(r => getV(r,'backlog').toLowerCase().includes('finaliz')).length;
+  const pend     = rows.length - final;
+
+  document.getElementById('k-pedidos').textContent  = rows.length.toLocaleString('es-AR');
+  document.getElementById('k-unid-ped').textContent = Math.round(unidPed).toLocaleString('es-AR');
+  document.getElementById('k-unid-conf').textContent= Math.round(unidConf).toLocaleString('es-AR');
+  document.getElementById('k-lineas').textContent   = Math.round(lineas).toLocaleString('es-AR');
+  document.getElementById('k-final').textContent    = final.toLocaleString('es-AR');
+  document.getElementById('k-pend').textContent     = pend.toLocaleString('es-AR');
+}
+
+// ── Charts ────────────────────────────────────────────────────────────────────
+const COLORS = ['#2563eb','#16a34a','#d97706','#7c3aed','#0d9488','#dc2626','#db2777','#ea580c','#0891b2','#65a30d'];
+function pct(v, t) { return t ? Math.round(v/t*100) + '%' : '0%'; }
+
+function updateCharts(rows) {
+  // 1: Unidades y líneas por marca — barras + línea doble eje
+  const marcaMap = {}, lineasMap = {};
+  rows.forEach(r => {
+    const m = getV(r,'marca')||'Sin marca';
+    marcaMap[m]  = (marcaMap[m]||0)  + num(getV(r,'unidPed'));
+    lineasMap[m] = (lineasMap[m]||0) + num(getV(r,'lineas'));
+  });
+  const mL = Object.keys(marcaMap).sort((a,b) => marcaMap[b]-marcaMap[a]).slice(0,10);
+  makeChart('chart-marca', {
+    type: 'bar',
+    data: {
+      labels: mL,
+      datasets: [
+        { type:'bar',  label:'Unidades', data: mL.map(k=>Math.round(marcaMap[k])),  backgroundColor: '#2563eb', borderRadius:4, borderSkipped:false, yAxisID:'y' },
+        { type:'line', label:'Líneas',   data: mL.map(k=>Math.round(lineasMap[k])), borderColor:'#d97706', backgroundColor:'rgba(217,119,6,0.1)', pointBackgroundColor:'#d97706', pointRadius:4, tension:0.3, yAxisID:'y2' }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'top',labels:{font:{size:11},color:'#6b6860',padding:12}} },
+      scales:{
+        x:  { grid:{display:false}, ticks:{font:{size:11},color:'#6b6860'} },
+        y:  { grid:{color:'#e2e0d8'}, ticks:{font:{size:11},color:'#2563eb',callback:v=>v.toLocaleString('es-AR')}, position:'left' },
+        y2: { grid:{display:false},  ticks:{font:{size:11},color:'#d97706'}, position:'right' }
+      }
+    }
+  });
+
+  // 2: Pedidos y unidades por estado — barras agrupadas
+  const estadoMap = {}, estadoUnid = {};
+  rows.forEach(r => {
+    const s = getV(r,'estado')||'Sin estado';
+    estadoMap[s]  = (estadoMap[s]||0)  + 1;
+    estadoUnid[s] = (estadoUnid[s]||0) + num(getV(r,'unidPed'));
+  });
+  const eL = Object.keys(estadoMap).sort((a,b) => estadoMap[b]-estadoMap[a]);
+  makeChart('chart-estado', {
+    type: 'bar',
+    data: {
+      labels: eL,
+      datasets: [
+        { label:'Pedidos',  data: eL.map(k=>estadoMap[k]),              backgroundColor:'#2563eb', borderRadius:3, borderSkipped:false, yAxisID:'y' },
+        { label:'Unidades', data: eL.map(k=>Math.round(estadoUnid[k])), backgroundColor:'#0d9488', borderRadius:3, borderSkipped:false, yAxisID:'y2' }
+      ]
+    },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins:{ legend:{position:'top',labels:{font:{size:11},color:'#6b6860',padding:12}} },
+      scales:{
+        x:  { grid:{display:false}, ticks:{font:{size:10},color:'#6b6860',maxRotation:30} },
+        y:  { grid:{color:'#e2e0d8'}, ticks:{font:{size:11},color:'#2563eb'}, position:'left',  title:{display:true,text:'Pedidos',font:{size:10},color:'#2563eb'} },
+        y2: { grid:{display:false},  ticks:{font:{size:11},color:'#0d9488',callback:v=>v.toLocaleString('es-AR')}, position:'right', title:{display:true,text:'Unidades',font:{size:10},color:'#0d9488'} }
+      }
+    }
+  });
+
+  // 3: Tipo de pedido (torta) — leyenda a la derecha
+  const tipoMap = {};
+  rows.forEach(r => { const t = getV(r,'tipo')||'Sin tipo'; tipoMap[t] = (tipoMap[t]||0)+1; });
+  const tL = Object.keys(tipoMap);
+  const tTotal = tL.reduce((a,k) => a+tipoMap[k], 0);
+  makeChart('chart-tipo', {
+    type: 'pie',
+    data: { labels: tL, datasets: [{ data: tL.map(k=>tipoMap[k]), backgroundColor: COLORS.slice(0,tL.length), borderWidth:2, borderColor:'#fff' }] },
+    options: { responsive:true, maintainAspectRatio:false,
+      plugins: { legend:{position:'right',labels:{font:{size:11},color:'#6b6860',padding:10,
+        generateLabels: chart => chart.data.labels.map((l,i) => ({ text: l+' '+pct(chart.data.datasets[0].data[i],tTotal), fillStyle: chart.data.datasets[0].backgroundColor[i], index:i }))
+      }}, tooltip:{callbacks:{label:ctx=>' '+ctx.label+': '+ctx.raw+' ('+pct(ctx.raw,tTotal)+')' }} } }
+  });
+
+}
+
+// ── Populate filters ──────────────────────────────────────────────────────────
+function populateFilters() {
+  const uniq = key => [...new Set(allRows.map(r => getV(r,key)).filter(Boolean))].sort();
+  buildDrop('drop-marca',  'ms-marca',  uniq('marca'),  'Todas');
+  buildDrop('drop-estado', 'ms-estado', uniq('estado'), 'Todos');
+  buildDrop('drop-tipo',   'ms-tipo',   uniq('tipo'),   'Todos');
+}
+
+document.getElementById('f-search').addEventListener('input', renderTable);
+
+// ── Load data ─────────────────────────────────────────────────────────────────
+function loadData() {
+  document.getElementById('loader').style.display = 'flex';
+  fetch(CSV_URL)
+    .then(r => r.text())
+    .then(text => {
+      const rows = parseCSV(text);
+      if (rows.length < 2) throw new Error('Sin datos');
+
+      // Leer fecha (D2 = índice 3) y hora (H2 = índice 7) de la fila 2 (índice 1)
+      const row2 = rows[1] || [];
+      const fechaAct = (row2[3] || '').trim();
+      const horaAct  = (row2[7] || '').trim();
+      if (fechaAct) {
+        document.getElementById('update-info').textContent = 'Actualizado: ' + fechaAct + (horaAct ? ' ' + horaAct : '');
+      }
+      // Headers están en fila 5 — buscar la que contiene "Ítem" o "tem" o "Orden SAP"
+      const headerRow = rows.findIndex(r => r.some(c => {
+        const cl = c.toLowerCase().trim();
+        return cl === 'ítem' || cl === 'item' || cl === 'tem' || cl.includes('orden sap');
+      }));
+      if (headerRow === -1) throw new Error('No se encontró la fila de encabezados.');
+      headers = rows[headerRow];
+
+      // Filas de datos: las que tienen un número en alguna de las primeras 3 columnas
+      allRows = rows.slice(headerRow + 1).filter(r => {
+        const vals = r.slice(0, 4).map(c => (c||'').trim());
+        return vals.some(v => v !== '' && !isNaN(Number(v)) && Number(v) > 0);
+      });
+
+      // Si la primera columna tiene datos de resumen mezclados, filtrar solo filas con Orden SAP (8 dígitos)
+      const iSAP = headers.findIndex(h => h.toLowerCase().includes('orden sap'));
+      if (iSAP !== -1) {
+        allRows = allRows.filter(r => {
+          const sap = (r[iSAP] || '').trim();
+          return sap.length >= 5 && !isNaN(Number(sap));
+        });
+      }
+      buildColMap();
+      populateFilters();
+      renderTable();
+      document.getElementById('status-bar').textContent = allRows.length + ' filas cargadas — Flujo OUT';
+    })
+    .catch(e => {
+      document.getElementById('tbody').innerHTML = '<tr class="empty-row"><td colspan="15">Error al cargar datos: ' + e.message + '</td></tr>';
+      document.getElementById('status-bar').textContent = 'Error: ' + e.message;
+    })
+    .finally(() => { document.getElementById('loader').style.display = 'none'; });
+}
+
+loadData();
+</script>
+</body>
+</html>
