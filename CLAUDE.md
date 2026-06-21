@@ -1,80 +1,80 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+Este archivo proporciona orientación a Claude Code (claude.ai/code) cuando trabaja con el código en este repositorio.
 
-## Project Overview
+## Descripción del proyecto
 
-**Mis-dashboard** is a static, no-build logistics monitoring platform for Loginter. It consists of two self-contained HTML files that fetch live data from Google Sheets and render interactive dashboards entirely in the browser.
+**Mis-dashboard** es una plataforma de monitoreo logístico estática (sin compilación) para Loginter. Consiste en dos archivos HTML autocontenidos que obtienen datos en vivo desde Google Sheets y renderizan dashboards interactivos completamente en el navegador.
 
-- `dashboard_pedidos (4).html` — Orders/Backlog dashboard
-- `dashboard_proximos_arribos (13).html` — Upcoming Arrivals dashboard
+- `dashboard_pedidos (4).html` — Dashboard de Pedidos/Backlog
+- `dashboard_proximos_arribos (13).html` — Dashboard de Próximos Arribos
 
-There is no package manager, build step, bundler, or test framework. To "run" the project, open an HTML file directly in a browser or serve it with any static file server (e.g. `python3 -m http.server`).
+No hay gestor de paquetes, paso de compilación, bundler ni framework de pruebas. Para "ejecutar" el proyecto, abrí el archivo HTML directamente en un navegador o serví con cualquier servidor de archivos estáticos (ej. `python3 -m http.server`).
 
-## Architecture
+## Arquitectura
 
-Each dashboard is a single monolithic HTML file (~530–720 lines) containing inline CSS, inline JavaScript, and a Chart.js CDN import. Both files follow the same architecture:
+Cada dashboard es un único archivo HTML monolítico (~530–720 líneas) que contiene CSS inline, JavaScript inline e importación de Chart.js desde CDN. Ambos archivos siguen la misma arquitectura:
 
-### Data Flow
+### Flujo de datos
 
 ```
-Google Sheets (public CSV URL)
-  → loadData()          fetch + parse
-  → parseCSV()          character-by-character state machine (handles quoted fields)
-  → buildColMap()       map logical column names to indices via keyword matching
-  → populateFilters()   build multi-select dropdown options
+Google Sheets (URL pública CSV)
+  → loadData()          fetch + parseo
+  → parseCSV()          máquina de estados carácter a carácter (maneja campos entre comillas)
+  → buildColMap()       mapea nombres lógicos de columnas a índices por coincidencia de palabras clave
+  → populateFilters()   construye opciones de dropdowns multi-selección
   → renderTable()
-       ├── getFiltered()    apply active filter selections + text search
-       ├── applySort()      sort by column (auto-detects date/number/text type)
-       ├── DOM update       bulk innerHTML replacement for table rows
-       ├── updateKPIs()     recalculate aggregate metrics from filtered rows
-       └── updateCharts()   destroy + recreate Chart.js instances
+       ├── getFiltered()    aplica filtros activos + búsqueda de texto
+       ├── applySort()      ordena por columna (detecta automáticamente tipo fecha/número/texto)
+       ├── DOM update       reemplazo masivo de innerHTML para filas de tabla
+       ├── updateKPIs()     recalcula métricas agregadas desde filas filtradas
+       └── updateCharts()   destruye y recrea instancias de Chart.js
 ```
 
-### Column Mapping
+### Mapeo de columnas
 
-Columns are identified by keyword matching against header names (`findCol()`), not by fixed position. This makes the dashboards resilient to column reordering in the source sheet. Column names are in Spanish with potential accent characters.
+Las columnas se identifican por coincidencia de palabras clave contra los nombres de encabezado (`findCol()`), no por posición fija. Esto hace que los dashboards sean resistentes al reordenamiento de columnas en la hoja fuente. Los nombres de columna están en español y pueden tener caracteres acentuados.
 
-### State
+### Estado
 
-All state is held in module-level variables: `allRows` (raw data), `headers`, `colMap`, `sortCol`/`sortDir`, and a `charts`/`chartInstances` object. There is no framework — state changes trigger a full `renderTable()` re-render.
+Todo el estado se mantiene en variables a nivel de módulo: `allRows` (datos crudos), `headers`, `colMap`, `sortCol`/`sortDir` y un objeto `charts`/`chartInstances`. No hay framework — los cambios de estado disparan un re-render completo de `renderTable()`.
 
-### Multi-Select Filters
+### Filtros multi-selección
 
-Custom-built (no library). Key functions: `toggleDrop(msId)`, `getMS(msId)`, `updateBtn(msId)`, `buildDrop(dropId)`. Dropdowns are `<div>`-based, not `<select>` elements.
+Construidos a medida (sin librería). Funciones clave: `toggleDrop(msId)`, `getMS(msId)`, `updateBtn(msId)`, `buildDrop(dropId)`. Los dropdowns son elementos `<div>`, no `<select>`.
 
-## Key Conventions
+## Convenciones clave
 
-### Number & Date Formatting
-- Numbers use `toLocaleString('es-AR')` — thousands separator is `.`, decimal is `,`
-- Dates are stored as `DD/MM/YYYY`; `parseDateAR(s)` converts to `YYYY-MM-DD` for sort comparisons
-- `num(v)` handles both `.` and `,` as decimal separator when parsing incoming data
+### Formateo de números y fechas
+- Los números usan `toLocaleString('es-AR')` — separador de miles es `.`, decimal es `,`
+- Las fechas se almacenan como `DD/MM/YYYY`; `parseDateAR(s)` convierte a `YYYY-MM-DD` para comparaciones de orden
+- `num(v)` maneja tanto `.` como `,` como separador decimal al parsear datos entrantes
 
-### Status Badges
-- `badgeEstado(v)` / `badgeStatus(v)` — map Spanish status strings to colored pill badges
-- `badgeASN(v)` — specific badge for ASN presence/absence
-- Color coding: green = Finalizado/Con ASN, yellow = Pendiente, red = Cancelado/Sin ASN
+### Badges de estado
+- `badgeEstado(v)` / `badgeStatus(v)` — mapean strings de estado en español a pills con color
+- `badgeASN(v)` — badge específico para presencia/ausencia de ASN
+- Código de colores: verde = Finalizado/Con ASN, amarillo = Pendiente, rojo = Cancelado/Sin ASN
 
-### Charts
-- All charts are Chart.js 4.4.0, loaded from CDN
-- Before creating a chart, always call `.destroy()` on the existing instance to avoid canvas reuse errors
-- Dual Y-axis (left = units, right = lines/percentage) is a recurring pattern
+### Gráficos
+- Todos los gráficos son Chart.js 4.4.0, cargados desde CDN
+- Antes de crear un gráfico, siempre llamar `.destroy()` en la instancia existente para evitar errores de reutilización de canvas
+- Doble eje Y (izquierdo = unidades, derecho = líneas/porcentaje) es un patrón recurrente
 
-### Data Validation
-- Rows are validated by checking that the first 4 columns contain numbers before inclusion
-- SAP order numbers must be 8+ digit numeric strings
-- "Merged cell" propagation: blank cells in certain columns inherit the last non-blank value (`lastValue` pattern)
+### Validación de datos
+- Las filas se validan verificando que las primeras 4 columnas contengan números antes de incluirlas
+- Los números de orden SAP deben ser strings numéricos de 8+ dígitos
+- Propagación de "celdas combinadas": las celdas en blanco en ciertas columnas heredan el último valor no vacío (patrón `lastValue`)
 
-## Google Sheets Data Sources
+## Fuentes de datos en Google Sheets
 
 - **Pedidos:** `https://docs.google.com/spreadsheets/d/e/2PACX-1vSLQWkhqF_hC4v6MjBKXBuWV8XaMtTL5F3Zn2l6efVjMf7EdMNJxxCsmuU9raeCug/pub?gid=941366860&single=true&output=csv`
 - **Próximos Arribos:** `https://docs.google.com/spreadsheets/d/e/2PACX-1vQ-ElVsKzXGfIFq4yC4RshpJhQ7IGb7JlBpmjshI4kK4T0H6Gg1LyiOeLt6Raf_OE3HYum8LPOmOPYd/pub?gid=1842608063&single=true&output=csv`
 
-The sheets must be published as CSV (File → Share → Publish to web). If data stops loading, the most likely cause is the sheet publication being revoked.
+Las hojas deben estar publicadas como CSV (Archivo → Compartir → Publicar en la web). Si los datos dejan de cargar, la causa más probable es que se haya revocado la publicación de la hoja.
 
-## UI / Styling Notes
+## UI y estilos
 
-- Fonts loaded from Google Fonts: **DM Sans** (body), **DM Mono** (numbers/codes), **Nunito** (headers)
-- Color palette uses CSS variables defined at the top of each `<style>` block
-- Responsive breakpoints at `1000px` and `900px` — table collapses to horizontal scroll below these widths
-- KPI grid uses CSS Grid; charts use a flex-wrap row layout
+- Fuentes cargadas desde Google Fonts: **DM Sans** (cuerpo), **DM Mono** (números/códigos), **Nunito** (encabezados)
+- La paleta de colores usa variables CSS definidas al inicio de cada bloque `<style>`
+- Breakpoints responsivos en `1000px` y `900px` — la tabla colapsa a scroll horizontal por debajo de estos anchos
+- La grilla de KPIs usa CSS Grid; los gráficos usan un layout de fila con flex-wrap
