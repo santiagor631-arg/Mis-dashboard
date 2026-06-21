@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SaReZ HH — Descargar App</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{
+  min-height:100vh;background:#060709;
+  font-family:'DM Sans',sans-serif;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+}
+.card{
+  background:#111418;border:1px solid #ffffff18;border-radius:20px;
+  padding:40px 36px;max-width:400px;width:100%;text-align:center;
+}
+.logo{
+  font-family:'Bebas Neue',sans-serif;font-size:36px;
+  letter-spacing:.08em;color:#e8c96a;margin-bottom:4px;
+}
+.sub{font-size:13px;color:#4a5568;letter-spacing:.1em;text-transform:uppercase;margin-bottom:32px}
+#qr-box{
+  background:#fff;border-radius:12px;padding:16px;
+  display:inline-block;margin-bottom:28px;
+}
+.url{
+  font-size:11px;color:#4a5568;word-break:break-all;
+  margin-bottom:24px;
+}
+.steps{
+  text-align:left;background:#0d0f12;border-radius:12px;
+  padding:18px 20px;border:1px solid #ffffff0f;
+}
+.steps-title{
+  font-size:10px;text-transform:uppercase;letter-spacing:.1em;
+  color:#4a5568;margin-bottom:12px;
+}
+.step{
+  display:flex;align-items:flex-start;gap:12px;
+  margin-bottom:12px;font-size:13px;color:#7e8898;
+  line-height:1.4;
+}
+.step:last-child{margin-bottom:0}
+.step-n{
+  width:22px;height:22px;border-radius:50%;
+  background:#e8c96a18;border:1px solid #e8c96a40;
+  color:#e8c96a;font-size:11px;font-weight:600;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  margin-top:1px;
+}
+.note{font-size:11px;color:#4a5568;margin-top:16px;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">SaReZ HH</div>
+  <div class="sub">Terminal Fijo</div>
+
+  <div id="qr-box">
+    <canvas id="qr-canvas"></canvas>
+  </div>
+
+  <div class="url" id="app-url"></div>
+
+  <div class="steps">
+    <div class="steps-title">Cómo instalar en Android</div>
+    <div class="step"><div class="step-n">1</div>Escaneá el QR con la cámara del celular</div>
+    <div class="step"><div class="step-n">2</div>Se abre Chrome con la app</div>
+    <div class="step"><div class="step-n">3</div>Tocá <strong style="color:#e8c96a">Agregar a pantalla de inicio</strong> (ícono de las 3 líneas → Instalar app)</div>
+    <div class="step"><div class="step-n">4</div>¡Listo! La app queda en tu pantalla como cualquier app nativa</div>
+  </div>
+  <div class="note">También funciona en iPhone: Safari → Compartir → Agregar a pantalla de inicio</div>
+</div>
+
+<script>
+// Minimal QR Code generator (based on the QRious approach — pure JS, no CDN needed)
+// Uses the browser's built-in canvas API
+
+const APP_URL = 'https://santiagor631-arg.github.io/Mis-dashboard/rf-hh-v2.html';
+document.getElementById('app-url').textContent = APP_URL;
+
+// Load qrcode library from cdnjs
+(function(){
+  var s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+  s.onload = function(){
+    var box = document.getElementById('qr-box');
+    box.innerHTML = '';
+    new QRCode(box, {
+      text: APP_URL,
+      width: 220,
+      height: 220,
+      colorDark: '#000000',
+      colorLight: '#ffffff',
+      correctLevel: QRCode.CorrectLevel.H
+    });
+  };
+  s.onerror = function(){
+    // Fallback: show link if QR lib fails to load
+    var box = document.getElementById('qr-box');
+    box.innerHTML = '<div style="padding:20px;font-size:12px;color:#333;max-width:220px;word-break:break-all">Abrí este link en el celular:<br><br><strong>' + APP_URL + '</strong></div>';
+  };
+  document.head.appendChild(s);
+})();
+</script>
+</body>
+</html>
